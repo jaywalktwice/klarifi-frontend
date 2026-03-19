@@ -224,7 +224,7 @@ export default function DocumentView() {
     return (
       <div className="max-w-3xl mx-auto px-6 py-16 text-center">
         <p className="text-red-400 mb-4">{error || 'Document not found'}</p>
-        <button onClick={() => navigate('/')} className="text-klarifi-400 hover:underline">
+        <button onClick={() => navigate('/dashboard')} className="text-klarifi-400 hover:underline">
           Back to Dashboard
         </button>
       </div>
@@ -239,7 +239,7 @@ export default function DocumentView() {
     <div className="max-w-3xl mx-auto px-6 py-8">
       {/* Back button */}
       <button
-        onClick={() => navigate('/')}
+        onClick={() => navigate('/dashboard')}
         className="flex items-center gap-2 text-gray-500 hover:text-gray-300 text-sm mb-6 transition-colors"
       >
         <svg className="w-4 h-4" viewBox="0 0 16 16" fill="none">
