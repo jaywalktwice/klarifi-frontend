@@ -29,9 +29,9 @@ export default function NeuralBackground() {
         this.z = Math.random(); // 0 to 1
         
         // Size and base brightness depend on depth
-        this.radius = this.z * 2.0 + 0.8; 
-        this.brightAlpha = this.z * 0.3 + 0.18; 
-        this.dimAlpha = this.z * 0.15 + 0.02; // Very dim base when scrolled down for readability
+        this.radius = this.z * 1.5 + 0.5; 
+        this.brightAlpha = this.z * 0.15 + 0.08; 
+        this.dimAlpha = this.z * 0.05 + 0.01; // Very dim base when scrolled down for readability
         this.baseAlpha = this.brightAlpha;
         this.currentAlpha = this.baseAlpha;
         
@@ -40,7 +40,7 @@ export default function NeuralBackground() {
         this.phaseSpeed = (Math.random() * 0.02) + 0.005;
       }
       
-      update(loadFadeFactor) {
+      update(loadFadeFactor, elapsed) {
         // Smoothly fade baseline brightness as user scrolls down the page
         this.baseAlpha = this.dimAlpha + (this.brightAlpha - this.dimAlpha) * scrollDimFactor;
         
@@ -70,16 +70,23 @@ export default function NeuralBackground() {
           mouseForceAlpha = force * 0.8; 
         }
         
-        // Smoothly interpolate current position to target for graceful floating
-        const targetX = this.baseX + repelX;
-        const targetY = this.baseY + repelY;
+        // Wavy fluid motion that travels slowly across the grid
+        const waveX = Math.sin(this.baseX * 0.003 + elapsed * 0.0008) * 35 * this.z;
+        const waveY = Math.cos(this.baseY * 0.003 + elapsed * 0.0008) * 35 * this.z;
         
-        this.x += (targetX - this.x) * 0.08; 
-        this.y += (targetY - this.y) * 0.08;
+        // Smoothly interpolate current position to target for graceful floating
+        const targetX = this.baseX + repelX + waveX;
+        const targetY = this.baseY + repelY + waveY;
+        
+        this.x += (targetX - this.x) * 0.06; 
+        this.y += (targetY - this.y) * 0.06;
         
         // Add subtle organic drift to base position
         this.baseX += (Math.random() - 0.5) * 0.15;
         this.baseY += (Math.random() - 0.5) * 0.15;
+        
+        // A pulsating wave of light moving across the dots
+        const waveAlpha = (Math.sin(this.baseX * 0.008 + this.baseY * 0.008 - elapsed * 0.001) * 0.5 + 0.5) * 0.15;
         
         // Infinite scrolling wrap
         const spacing = 45;
@@ -92,7 +99,7 @@ export default function NeuralBackground() {
            this.y = this.baseY;
         }
         
-        const targetAlpha = Math.min(this.baseAlpha + twinkle + mouseForceAlpha, 1);
+        const targetAlpha = Math.min(this.baseAlpha + twinkle + waveAlpha + mouseForceAlpha, 1);
         this.currentAlpha = targetAlpha * loadFadeFactor;
       }
       
@@ -143,7 +150,7 @@ export default function NeuralBackground() {
       ctx.clearRect(0, 0, width, height);
       
       for (let i = 0; i < particles.length; i++) {
-        particles[i].update(loadFadeFactor);
+        particles[i].update(loadFadeFactor, elapsed);
         particles[i].draw();
       }
       
