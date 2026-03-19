@@ -29,7 +29,7 @@ export default function Login() {
       } else {
         await login(email, password);
       }
-      navigate('/');
+      navigate('/dashboard');
     } catch (err) {
       setError(err.message);
     } finally {
