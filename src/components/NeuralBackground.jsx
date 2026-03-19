@@ -28,8 +28,8 @@ export default function NeuralBackground() {
         this.z = Math.random(); // 0 to 1
         
         // Size and base brightness depend on depth
-        this.radius = this.z * 1.5 + 0.5; 
-        this.baseAlpha = this.z * 0.15 + 0.02; 
+        this.radius = this.z * 1.5 + 0.6; 
+        this.baseAlpha = this.z * 0.2 + 0.05; 
         this.currentAlpha = this.baseAlpha;
         
         // Twinkle phase
@@ -40,7 +40,7 @@ export default function NeuralBackground() {
       update(time) {
         // Natural twinkle
         this.phase += this.phaseSpeed;
-        const twinkle = (Math.sin(this.phase) * 0.5 + 0.5) * 0.1;
+        const twinkle = (Math.sin(this.phase) * 0.5 + 0.5) * 0.15;
         
         // Mouse interaction (Gentle fluid wake)
         const dx = mouse.x - this.x;
@@ -70,6 +70,10 @@ export default function NeuralBackground() {
         
         this.x += (targetX - this.x) * 0.08; 
         this.y += (targetY - this.y) * 0.08;
+        
+        // Add subtle organic drift to base position
+        this.baseX += (Math.random() - 0.5) * 0.15;
+        this.baseY += (Math.random() - 0.5) * 0.15;
         
         // Infinite scrolling wrap
         const spacing = 45;
