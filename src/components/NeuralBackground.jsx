@@ -12,8 +12,7 @@ export default function NeuralBackground() {
     let width = window.innerWidth;
     let height = window.innerHeight;
     
-    let mouse = { x: -1000, y: -1000, vx: 0, vy: 0 };
-    let lastMouse = { x: -1000, y: -1000 };
+    let mouse = { x: -1000, y: -1000 };
     let lastScrollY = window.scrollY;
     
     const particles = [];
@@ -24,67 +23,80 @@ export default function NeuralBackground() {
         this.y = y;
         this.baseX = x;
         this.baseY = y;
-        this.vx = 0;
-        this.vy = 0;
-        // Tiny dots like stars
-        this.radius = Math.random() * 0.8 + 0.4;
-        // Very dim by default
-        this.baseAlpha = Math.random() * 0.15 + 0.05;
+        
+        // 3D Depth layering
+        this.z = Math.random(); // 0 to 1
+        
+        // Size and base brightness depend on depth
+        this.radius = this.z * 1.5 + 0.5; 
+        this.baseAlpha = this.z * 0.15 + 0.02; 
         this.currentAlpha = this.baseAlpha;
+        
+        // Twinkle phase
+        this.phase = Math.random() * Math.PI * 2;
+        this.phaseSpeed = (Math.random() * 0.02) + 0.005;
       }
       
-      update() {
-        // Fluid Mouse interaction (Subtle)
+      update(time) {
+        // Natural twinkle
+        this.phase += this.phaseSpeed;
+        const twinkle = (Math.sin(this.phase) * 0.5 + 0.5) * 0.1;
+        
+        // Mouse interaction (Gentle fluid wake)
         const dx = mouse.x - this.x;
         const dy = mouse.y - this.y;
         const dist = Math.sqrt(dx * dx + dy * dy);
         
         let mouseForceAlpha = 0;
+        let repelX = 0;
+        let repelY = 0;
         
-        if (dist < 200) {
-          const force = (200 - dist) / 200;
-          // Apply gentle velocity drag from mouse + repel force
-          this.vx += mouse.vx * force * 0.004 - (dx / dist) * force * 0.3;
-          this.vy += mouse.vy * force * 0.004 - (dy / dist) * force * 0.3;
+        const interactionRadius = 250;
+        if (dist < interactionRadius) {
+          // Non-linear falloff for butter-smooth edges
+          const force = Math.pow((interactionRadius - dist) / interactionRadius, 2); 
           
-          // Illuminate when near mouse
+          // Push away slightly, scaled by depth (foreground moves more)
+          repelX = -(dx / dist) * force * 20 * this.z;
+          repelY = -(dy / dist) * force * 20 * this.z;
+          
+          // Illuminate spectacularly when near mouse
           mouseForceAlpha = force * 0.8; 
         }
         
-        // Gentle spring back to origin
-        const homeDx = this.baseX - this.x;
-        const homeDy = this.baseY - this.y;
-        this.vx += homeDx * 0.03; // Stronger spring so they stay near grid
-        this.vy += homeDy * 0.03;
+        // Smoothly interpolate current position to target for graceful floating
+        const targetX = this.baseX + repelX;
+        const targetY = this.baseY + repelY;
         
-        // Friction
-        this.vx *= 0.85;
-        this.vy *= 0.85;
+        this.x += (targetX - this.x) * 0.08; 
+        this.y += (targetY - this.y) * 0.08;
         
-        // Very subtle wander
-        this.vx += (Math.random() - 0.5) * 0.02;
-        this.vy += (Math.random() - 0.5) * 0.02;
-        
-        this.x += this.vx;
-        this.y += this.vy;
-        
-        // Wrap edges to keep dots on screen infinitely during scrolling
-        const spacing = 35;
+        // Infinite scrolling wrap
+        const spacing = 45;
         if (this.baseY < -spacing * 2) { 
            this.baseY += height + spacing * 4; 
-           this.y += height + spacing * 4; 
+           this.y = this.baseY;
         }
         if (this.baseY > height + spacing * 2) { 
            this.baseY -= height + spacing * 4; 
-           this.y -= height + spacing * 4; 
+           this.y = this.baseY;
         }
         
-        this.currentAlpha = Math.min(this.baseAlpha + mouseForceAlpha, 1);
+        this.currentAlpha = Math.min(this.baseAlpha + twinkle + mouseForceAlpha, 1);
       }
       
       draw() {
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        
+        // Elegant glow for highly active particles (replaces visible lines)
+        if (this.currentAlpha > 0.3) {
+           ctx.shadowColor = `rgba(92, 180, 247, ${this.currentAlpha})`;
+           ctx.shadowBlur = 12 * this.currentAlpha;
+        } else {
+           ctx.shadowBlur = 0;
+        }
+        
         ctx.fillStyle = `rgba(92, 180, 247, ${this.currentAlpha})`;
         ctx.fill();
       }
@@ -95,31 +107,27 @@ export default function NeuralBackground() {
       canvas.height = height;
       particles.length = 0;
       
-      // Invisible grid spawn
-      const spacing = 35;
+      // Invisible grid spawn with organic offset
+      const spacing = 45;
       const cols = Math.ceil(width / spacing);
       const rows = Math.ceil(height / spacing);
       
       for (let i = -2; i <= cols + 2; i++) {
         for (let j = -2; j <= rows + 2; j++) {
-           // Add a tiny bit of random offset to the grid so it behaves organically
-           const offsetX = (Math.random() - 0.5) * 15;
-           const offsetY = (Math.random() - 0.5) * 15;
+           const offsetX = (Math.random() - 0.5) * 20;
+           const offsetY = (Math.random() - 0.5) * 20;
            particles.push(new Particle(i * spacing + offsetX, j * spacing + offsetY));
         }
       }
     }
     
+    let time = 0;
     function animate() {
-      // Use standard clear for stars instead of blur trails (matching requested subtle look)
       ctx.clearRect(0, 0, width, height);
-      
-      // Decay mouse velocity
-      mouse.vx *= 0.9;
-      mouse.vy *= 0.9;
+      time++;
       
       for (let i = 0; i < particles.length; i++) {
-        particles[i].update();
+        particles[i].update(time);
         particles[i].draw();
       }
       
@@ -136,21 +144,13 @@ export default function NeuralBackground() {
     };
     
     const handleMouseMove = (e) => {
-      if (lastMouse.x !== -1000) {
-        mouse.vx = e.clientX - lastMouse.x;
-        mouse.vy = e.clientY - lastMouse.y;
-      }
       mouse.x = e.clientX;
       mouse.y = e.clientY;
-      lastMouse.x = e.clientX;
-      lastMouse.y = e.clientY;
     };
     
     const handleMouseLeave = () => {
       mouse.x = -1000;
       mouse.y = -1000;
-      mouse.vx = 0;
-      mouse.vy = 0;
     };
     
     const handleScroll = () => {
@@ -158,10 +158,11 @@ export default function NeuralBackground() {
       const deltaScroll = currentScrollY - lastScrollY;
       lastScrollY = currentScrollY;
       
-      // Parallax shift the particles (0.5 = move at 50% scroll speed)
+      // True volumetric 3D parallax! Shift particles based on their Z depth
       particles.forEach(p => {
-        p.y -= deltaScroll * 0.5;
-        p.baseY -= deltaScroll * 0.5;
+        const parallaxFactor = 0.2 + (p.z * 0.4); // Background moves at 0.2x speed, foreground at 0.6x
+        p.y -= deltaScroll * parallaxFactor;
+        p.baseY -= deltaScroll * parallaxFactor;
       });
     };
     
