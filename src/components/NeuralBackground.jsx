@@ -70,9 +70,9 @@ export default function NeuralBackground() {
           mouseForceAlpha = force * 0.8; 
         }
         
-        // Wavy fluid motion with tighter ripples traveling slowly across the grid
-        const waveX = Math.sin(this.baseX * 0.015 + elapsed * 0.0012) * 35 * this.z;
-        const waveY = Math.cos(this.baseY * 0.015 + elapsed * 0.0012) * 35 * this.z;
+        // Ultra-slow, mature fluid motion
+        const waveX = Math.sin(this.baseX * 0.002 + elapsed * 0.0003) * 20 * this.z;
+        const waveY = Math.cos(this.baseY * 0.002 + elapsed * 0.0003) * 20 * this.z;
         
         // Smoothly interpolate current position to target for graceful floating
         const targetX = this.baseX + repelX + waveX;
@@ -85,8 +85,8 @@ export default function NeuralBackground() {
         this.baseX += (Math.random() - 0.5) * 0.15;
         this.baseY += (Math.random() - 0.5) * 0.15;
         
-        // A pulsating wave of light with tighter, more localized ripples
-        const waveAlpha = (Math.sin(this.baseX * 0.025 + this.baseY * 0.025 - elapsed * 0.0015) * 0.5 + 0.5) * 0.15;
+        // Barely noticeable, extremely calm wave of light
+        const waveAlpha = (Math.sin(this.baseX * 0.004 + this.baseY * 0.004 - elapsed * 0.0005) * 0.5 + 0.5) * 0.08;
         
         // Infinite scrolling wrap
         const spacing = 45;
