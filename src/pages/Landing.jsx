@@ -70,11 +70,11 @@ export default function Landing() {
       <section className="hero">
         <div className="hero-gl"></div>
         <div className="hero-gr"></div>
-        <div className="hero-c">
+        <div className="hero-c flex flex-col items-center mx-auto text-center w-full">
           <div className="hb"><span className="dot"></span> 4x hackathon winner & finalist — now production-ready</div>
-          <h1>Your documents hold answers.<br />Klarifi <em>finds them.</em></h1>
-          <p className="hero-sub">AI-powered document intelligence that reads customs forms, invoices, contracts, and government paperwork — and turns them into structured, exportable data your systems can actually use.</p>
-          <div className="hero-btns">
+          <h1 className="text-center w-full *:text-center">Your documents hold answers.<br />Klarifi <em>finds them.</em></h1>
+          <p className="hero-sub text-center w-full">AI-powered document intelligence that reads customs forms, invoices, contracts, and government paperwork — and turns them into structured, exportable data your systems can actually use.</p>
+          <div className="hero-btns w-full flex justify-center">
             <Link to="/login" className="bp">Try Demo <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M3 8h10m0 0L9 4m4 4L9 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg></Link>
             <a href="#how" className="bs">See how it works</a>
           </div>
