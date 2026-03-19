@@ -151,7 +151,7 @@ export default function NeuralBackground() {
     }
     
     init();
-    animate();
+    requestAnimationFrame(animate);
     
     const handleResize = () => {
       width = window.innerWidth;
