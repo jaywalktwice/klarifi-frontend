@@ -132,13 +132,18 @@ export default function NeuralBackground() {
       }
     }
     
-    let time = 0;
-    function animate() {
+    let startTime = null;
+    function animate(timestamp) {
+      if (!startTime) startTime = timestamp;
+      const elapsed = timestamp - startTime;
+      
+      // Beautiful smooth fade-in over the first 2.5 seconds using ease-in curve
+      const loadFadeFactor = Math.min(1, Math.pow(elapsed / 2500, 1.5)); 
+      
       ctx.clearRect(0, 0, width, height);
-      time++;
       
       for (let i = 0; i < particles.length; i++) {
-        particles[i].update(time);
+        particles[i].update(loadFadeFactor);
         particles[i].draw();
       }
       
