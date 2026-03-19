@@ -14,6 +14,7 @@ export default function NeuralBackground() {
     
     let mouse = { x: -1000, y: -1000, vx: 0, vy: 0 };
     let lastMouse = { x: -1000, y: -1000 };
+    let lastScrollY = window.scrollY;
     
     // Create dense particle field for fluid flow
     const particleCount = Math.min(Math.floor((width * height) / 4500), 350);
@@ -60,6 +61,12 @@ export default function NeuralBackground() {
         
         this.x += this.vx;
         this.y += this.vy;
+        
+        // Wrap edges to keep dots on screen infinitely during scrolling
+        if (this.x < -100) { this.x += width + 200; this.baseX += width + 200; }
+        if (this.x > width + 100) { this.x -= width + 200; this.baseX -= width + 200; }
+        if (this.y < -100) { this.y += height + 200; this.baseY += height + 200; }
+        if (this.y > height + 100) { this.y -= height + 200; this.baseY -= height + 200; }
       }
       
       draw() {
@@ -159,14 +166,28 @@ export default function NeuralBackground() {
       mouse.vy = 0;
     };
     
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      const deltaScroll = currentScrollY - lastScrollY;
+      lastScrollY = currentScrollY;
+      
+      // Parallax shift the particles (0.5 = move at 50% scroll speed)
+      particles.forEach(p => {
+        p.y -= deltaScroll * 0.5;
+        p.baseY -= deltaScroll * 0.5;
+      });
+    };
+    
     window.addEventListener('resize', handleResize);
     window.addEventListener('mousemove', handleMouseMove);
     window.addEventListener('mouseout', handleMouseLeave);
+    window.addEventListener('scroll', handleScroll, { passive: true });
     
     return () => {
       window.removeEventListener('resize', handleResize);
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('mouseout', handleMouseLeave);
+      window.removeEventListener('scroll', handleScroll);
       cancelAnimationFrame(animationFrameId);
     };
   }, []);
