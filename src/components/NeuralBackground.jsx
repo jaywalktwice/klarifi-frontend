@@ -8,65 +8,69 @@ export default function NeuralBackground() {
     if (!canvas) return;
     
     const ctx = canvas.getContext('2d');
-    
     let animationFrameId;
-    let particles = [];
     let width = window.innerWidth;
     let height = window.innerHeight;
     
-    let mouse = { x: -1000, y: -1000 };
+    let mouse = { x: -1000, y: -1000, vx: 0, vy: 0 };
+    let lastMouse = { x: -1000, y: -1000 };
     
-    // settings
-    const particleCount = Math.min(Math.floor((width * height) / 12000), 120);
-    const connectionDistance = 160;
-    const mouseInteractionDistance = 250;
+    // Create dense particle field for fluid flow
+    const particleCount = Math.min(Math.floor((width * height) / 4500), 350);
+    const particles = [];
     
     class Particle {
       constructor() {
         this.x = Math.random() * width;
         this.y = Math.random() * height;
-        this.vx = (Math.random() - 0.5) * 0.4;
-        this.vy = (Math.random() - 0.5) * 0.4;
-        this.baseRadius = Math.random() * 1.5 + 0.5;
-        this.radius = this.baseRadius;
-        this.baseAlpha = Math.random() * 0.3 + 0.1;
-        this.alpha = this.baseAlpha;
-        this.pulsePhase = Math.random() * Math.PI * 2;
+        this.vx = (Math.random() - 0.5) * 0.2;
+        this.vy = (Math.random() - 0.5) * 0.2;
+        this.baseX = this.x;
+        this.baseY = this.y;
+        this.radius = Math.random() * 1.5 + 0.5;
+        this.colorAlpha = Math.random() * 0.3 + 0.1;
       }
       
       update() {
-        this.x += this.vx;
-        this.y += this.vy;
-        
-        // Wrap around edges
-        if (this.x < 0) this.x = width;
-        if (this.x > width) this.x = 0;
-        if (this.y < 0) this.y = height;
-        if (this.y > height) this.y = 0;
-        
-        // Pulsate
-        this.pulsePhase += 0.015;
-        const pulse = Math.sin(this.pulsePhase) * 0.5 + 0.5;
-        
-        // Mouse interaction
+        // Fluid Mouse interaction
         const dx = mouse.x - this.x;
         const dy = mouse.y - this.y;
-        const distance = Math.sqrt(dx * dx + dy * dy);
+        const dist = Math.sqrt(dx * dx + dy * dy);
         
-        if (distance < mouseInteractionDistance) {
-          const intensity = 1 - distance / mouseInteractionDistance;
-          this.alpha = this.baseAlpha + intensity * 0.5;
-          this.radius = this.baseRadius + intensity * 1.5;
-        } else {
-          this.alpha = this.baseAlpha + pulse * 0.2;
-          this.radius = this.baseRadius;
+        if (dist < 250) {
+          const force = (250 - dist) / 250;
+          // Apply velocity drag from mouse + repel force
+          this.vx += mouse.vx * force * 0.015 - (dx / dist) * force * 1.2;
+          this.vy += mouse.vy * force * 0.015 - (dy / dist) * force * 1.2;
         }
+        
+        // Gentle spring back to origin to maintain mesh density
+        const homeDx = this.baseX - this.x;
+        const homeDy = this.baseY - this.y;
+        this.vx += homeDx * 0.003; 
+        this.vy += homeDy * 0.003;
+        
+        // Friction
+        this.vx *= 0.94;
+        this.vy *= 0.94;
+        
+        // Add subtle wander
+        this.vx += (Math.random() - 0.5) * 0.08;
+        this.vy += (Math.random() - 0.5) * 0.08;
+        
+        this.x += this.vx;
+        this.y += this.vy;
       }
       
       draw() {
+        // Velocity determines brightness and size
+        const speed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
+        const activeAlpha = Math.min(this.colorAlpha + speed * 0.15, 1);
+        const drawRadius = this.radius + speed * 0.4;
+        
         ctx.beginPath();
-        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(92, 180, 247, ${this.alpha})`;
+        ctx.arc(this.x, this.y, drawRadius, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(92, 180, 247, ${activeAlpha})`;
         ctx.fill();
       }
     }
@@ -74,51 +78,53 @@ export default function NeuralBackground() {
     function init() {
       canvas.width = width;
       canvas.height = height;
-      particles = [];
+      particles.length = 0;
       for (let i = 0; i < particleCount; i++) {
         particles.push(new Particle());
       }
     }
     
     function animate() {
-      ctx.clearRect(0, 0, width, height);
+      // Use fillRect with opacity for beautiful motion trails
+      ctx.fillStyle = 'rgba(9, 11, 15, 0.4)'; // Matching #090B0F var(--bg)
+      ctx.fillRect(0, 0, width, height);
       
-      // Update & Draw particles
-      particles.forEach(p => {
-        p.update();
-        p.draw();
-      });
+      // Decay mouse velocity
+      mouse.vx *= 0.9;
+      mouse.vy *= 0.9;
       
-      // Draw connections
+      // Draw Connections (the mesh)
+      ctx.lineWidth = 0.6;
       for (let i = 0; i < particles.length; i++) {
+        const p1 = particles[i];
+        p1.update();
+        p1.draw();
+        
+        // Connect nearby particles
         for (let j = i + 1; j < particles.length; j++) {
-          const dx = particles[i].x - particles[j].x;
-          const dy = particles[i].y - particles[j].y;
-          const distance = Math.sqrt(dx * dx + dy * dy);
+          const p2 = particles[j];
+          const dx = p1.x - p2.x;
+          const dy = p1.y - p2.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
           
-          if (distance < connectionDistance) {
-            // Check if near mouse for brighter connection
-            const midX = (particles[i].x + particles[j].x) / 2;
-            const midY = (particles[i].y + particles[j].y) / 2;
-            const mdx = mouse.x - midX;
-            const mdy = mouse.y - midY;
-            const mouseDist = Math.sqrt(mdx * mdx + mdy * mdy);
+          if (dist < 100) {
+            let opacity = 1 - (dist / 100);
             
-            let lineAlpha = 1 - (distance / connectionDistance);
-            lineAlpha *= 0.12; // base opacity
-            
-            if (mouseDist < mouseInteractionDistance) {
-               const interaction = 1 - mouseDist / mouseInteractionDistance;
-               lineAlpha += interaction * 0.4;
+            // Highlight connections near mouse
+            const mdx = mouse.x - p1.x;
+            const mdy = mouse.y - p1.y;
+            const mouseDist = Math.sqrt(mdx*mdx + mdy*mdy);
+            if (mouseDist < 250) {
+              opacity += (1 - mouseDist / 250) * 0.8;
             }
             
-            ctx.beginPath();
-            ctx.moveTo(particles[i].x, particles[i].y);
-            ctx.lineTo(particles[j].x, particles[j].y);
-            // Match Klarifi blue theme
-            ctx.strokeStyle = `rgba(46, 139, 216, ${lineAlpha})`;
-            ctx.lineWidth = 1;
-            ctx.stroke();
+            if (opacity > 0.02) {
+              ctx.beginPath();
+              ctx.moveTo(p1.x, p1.y);
+              ctx.lineTo(p2.x, p2.y);
+              ctx.strokeStyle = `rgba(46, 139, 216, ${opacity * 0.4})`; // Klarifi blue
+              ctx.stroke();
+            }
           }
         }
       }
@@ -136,13 +142,21 @@ export default function NeuralBackground() {
     };
     
     const handleMouseMove = (e) => {
+      if (lastMouse.x !== -1000) {
+        mouse.vx = e.clientX - lastMouse.x;
+        mouse.vy = e.clientY - lastMouse.y;
+      }
       mouse.x = e.clientX;
       mouse.y = e.clientY;
+      lastMouse.x = e.clientX;
+      lastMouse.y = e.clientY;
     };
     
     const handleMouseLeave = () => {
       mouse.x = -1000;
       mouse.y = -1000;
+      mouse.vx = 0;
+      mouse.vy = 0;
     };
     
     window.addEventListener('resize', handleResize);
