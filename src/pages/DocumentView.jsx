@@ -119,6 +119,7 @@ export default function DocumentView() {
   const navigate = useNavigate();
   const [doc, setDoc] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [analyzing, setAnalyzing] = useState(true);
   const [error, setError] = useState('');
   const [exporting, setExporting] = useState(false);
   
@@ -127,13 +128,21 @@ export default function DocumentView() {
       try {
         const data = await getDocument(id);
         setDoc(data);
+        setLoading(false);
       } catch (err) {
         setError(err.message);
-      } finally {
         setLoading(false);
+        setAnalyzing(false);
       }
     }
     load();
+    
+    // Simulate AI extraction time 
+    const timer = setTimeout(() => {
+      setAnalyzing(false);
+    }, 2500);
+    
+    return () => clearTimeout(timer);
   }, [id]);
   
   /**
@@ -169,11 +178,43 @@ export default function DocumentView() {
     }
   }
   
-  // Loading state
-  if (loading) {
+  // Loading or Analyzing state
+  if (loading || analyzing) {
     return (
-      <div className="max-w-3xl mx-auto px-6 py-16 text-center text-gray-500">
-        Loading document...
+      <div className="max-w-3xl mx-auto px-6 py-32 flex flex-col items-center justify-center min-h-[60vh]">
+        {/* Cheeky Scanning Animation */}
+        <div className="relative w-24 h-32 bg-[#111318] border border-white/10 rounded-lg overflow-hidden mb-8 shadow-2xl">
+          {/* Document lines */}
+          <div className="absolute inset-x-4 top-6 h-1 rounded bg-white/10"></div>
+          <div className="absolute inset-x-4 top-10 h-1 rounded bg-white/10"></div>
+          <div className="absolute inset-x-4 top-14 h-1 rounded bg-white/10 w-3/4"></div>
+          <div className="absolute inset-x-4 top-20 h-1 rounded bg-white/10"></div>
+          <div className="absolute inset-x-4 top-24 h-1 rounded bg-white/10 w-5/6"></div>
+          
+          {/* Scanner beam */}
+          <div className="absolute inset-x-0 h-1 bg-klarifi-400 shadow-[0_0_15px_rgba(56,189,248,0.8)]" style={{
+            animation: 'scan 1.5s ease-in-out infinite alternate'
+          }}></div>
+        </div>
+        
+        <h2 className="text-xl font-display font-medium text-white mb-3 flex items-center gap-2">
+          <span>Clarifying Document</span>
+          <span className="flex gap-1.5 items-center mt-1">
+            <span className="w-1.5 h-1.5 rounded-full bg-klarifi-500 animate-[bounce_1s_infinite_0ms]"></span>
+            <span className="w-1.5 h-1.5 rounded-full bg-klarifi-400 animate-[bounce_1s_infinite_150ms]"></span>
+            <span className="w-1.5 h-1.5 rounded-full bg-cyan-300 animate-[bounce_1s_infinite_300ms]"></span>
+          </span>
+        </h2>
+        <p className="text-gray-500 text-sm">Our AI models are extracting structured data...</p>
+        
+        <style dangerouslySetInnerHTML={{__html:`
+          @keyframes scan {
+            0% { top: 0%; opacity: 0; }
+            5% { opacity: 1; }
+            95% { opacity: 1; }
+            100% { top: 100%; opacity: 0; }
+          }
+        `}} />
       </div>
     );
   }
