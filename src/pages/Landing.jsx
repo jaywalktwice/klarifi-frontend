@@ -110,9 +110,12 @@ export default function Landing() {
         <div className="hero-c flex flex-col items-center mx-auto text-center w-full">
           <div className="hb"><span className="dot"></span> 4x hackathon winner & finalist — now production-ready</div>
           <h1 className="text-center w-full *:text-center">
-            Your documents hold answers.<br />
-            Klarifi <em>{currentText}</em>
-            <span className="inline-block w-[3px] h-[0.9em] align-middle bg-[var(--accent-l)] ml-1" style={{ animation: 'pu 1s infinite' }}></span>
+            <span>Your documents hold answers.</span><br />
+            <span className="inline-flex items-center text-left" style={{ width: '420px', display: 'inline-flex' }}>
+              <span>Klarifi&nbsp;</span>
+              <em className="whitespace-nowrap" style={{ color: 'var(--accent-l)', fontStyle: 'italic' }}>{currentText}</em>
+              <span className="inline-block w-[3px] h-[0.9em] align-middle bg-[var(--accent-l)] ml-1" style={{ animation: 'pu 1s infinite' }}></span>
+            </span>
           </h1>
           <p className="hero-sub text-center w-full">AI-powered document intelligence that reads customs forms, invoices, contracts, and government paperwork — and turns them into structured, exportable data your systems can actually use.</p>
           <div className="hero-btns w-full flex justify-center">
