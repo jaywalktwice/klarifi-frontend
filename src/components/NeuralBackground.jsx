@@ -14,6 +14,7 @@ export default function NeuralBackground() {
     
     let mouse = { x: -1000, y: -1000 };
     let lastScrollY = window.scrollY;
+    let scrollDimFactor = Math.max(0, 1 - (window.scrollY / 800));
     
     const particles = [];
     
@@ -29,7 +30,9 @@ export default function NeuralBackground() {
         
         // Size and base brightness depend on depth
         this.radius = this.z * 2.0 + 0.8; 
-        this.baseAlpha = this.z * 0.3 + 0.18; 
+        this.brightAlpha = this.z * 0.3 + 0.18; 
+        this.dimAlpha = this.z * 0.15 + 0.02; // Very dim base when scrolled down for readability
+        this.baseAlpha = this.brightAlpha;
         this.currentAlpha = this.baseAlpha;
         
         // Twinkle phase
@@ -38,6 +41,9 @@ export default function NeuralBackground() {
       }
       
       update(time) {
+        // Smoothly fade baseline brightness as user scrolls down the page
+        this.baseAlpha = this.dimAlpha + (this.brightAlpha - this.dimAlpha) * scrollDimFactor;
+        
         // Natural twinkle
         this.phase += this.phaseSpeed;
         const twinkle = (Math.sin(this.phase) * 0.5 + 0.5) * 0.2;
@@ -161,6 +167,8 @@ export default function NeuralBackground() {
       const currentScrollY = window.scrollY;
       const deltaScroll = currentScrollY - lastScrollY;
       lastScrollY = currentScrollY;
+      
+      scrollDimFactor = Math.max(0, 1 - (currentScrollY / 800));
       
       // True volumetric 3D parallax! Shift particles based on their Z depth
       particles.forEach(p => {
