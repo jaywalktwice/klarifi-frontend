@@ -40,7 +40,7 @@ export default function NeuralBackground() {
         this.phaseSpeed = (Math.random() * 0.02) + 0.005;
       }
       
-      update(time) {
+      update(loadFadeFactor) {
         // Smoothly fade baseline brightness as user scrolls down the page
         this.baseAlpha = this.dimAlpha + (this.brightAlpha - this.dimAlpha) * scrollDimFactor;
         
@@ -92,7 +92,8 @@ export default function NeuralBackground() {
            this.y = this.baseY;
         }
         
-        this.currentAlpha = Math.min(this.baseAlpha + twinkle + mouseForceAlpha, 1);
+        const targetAlpha = Math.min(this.baseAlpha + twinkle + mouseForceAlpha, 1);
+        this.currentAlpha = targetAlpha * loadFadeFactor;
       }
       
       draw() {
