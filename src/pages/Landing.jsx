@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import NeuralBackground from '../components/NeuralBackground';
 import './Landing.css';
 
 export default function Landing() {
   const [navScrolled, setNavScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [mousePos, setMousePos] = useState({ x: -500, y: -500 });
-  const [isHovering, setIsHovering] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -39,16 +38,9 @@ export default function Landing() {
       }
     };
     
-    // Mouse tracking
-    const handleMouseMove = (e) => {
-      setMousePos({ x: e.clientX, y: e.clientY });
-    };
-    
     window.addEventListener('scroll', handleScroll);
-    window.addEventListener('mousemove', handleMouseMove);
     return () => {
       window.removeEventListener('scroll', handleScroll);
-      window.removeEventListener('mousemove', handleMouseMove);
       clearTimeout(timeout);
     };
   }, []);
@@ -59,19 +51,8 @@ export default function Landing() {
   };
 
   return (
-    <div 
-      className="landing-wrapper"
-      onMouseEnter={() => setIsHovering(true)}
-      onMouseLeave={() => setIsHovering(false)}
-    >
-      {/* Interactive Mouse Glow */}
-      <div 
-        className="pointer-events-none fixed inset-0 z-0 transition-opacity duration-700"
-        style={{
-          opacity: isHovering ? 1 : 0,
-          background: `radial-gradient(900px circle at ${mousePos.x}px ${mousePos.y}px, rgba(46,139,216,0.06), transparent 40%)`
-        }}
-      />
+    <div className="landing-wrapper">
+      <NeuralBackground />
       
       <nav className="landing-nav" style={{ borderBottomColor: navScrolled ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.04)' }}>
         <div className="nav-in">
