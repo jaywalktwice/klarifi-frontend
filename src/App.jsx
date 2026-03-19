@@ -9,8 +9,9 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Navigate, Link, useNavigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, Link, useNavigate, Outlet } from 'react-router-dom';
 import { isAuthenticated, logout, getCurrentUser } from './api';
+import Landing from './pages/Landing';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import DocumentView from './pages/DocumentView';
@@ -31,7 +32,7 @@ function Navbar() {
   return (
     <nav className="fixed top-0 w-full z-50 px-6 py-4 bg-[#0A0C10]/80 backdrop-blur-xl border-b border-white/5">
       <div className="max-w-6xl mx-auto flex justify-between items-center">
-        <Link to="/" className="flex items-center gap-3">
+        <Link to="/dashboard" className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-klarifi-500 to-cyan-300 flex items-center justify-center text-sm font-bold">
             K
           </div>
@@ -72,36 +73,56 @@ function ProtectedRoute({ children }) {
 }
 
 // ============================================
+// APP LAYOUT (For Pages with Navbar)
+// ============================================
+
+function AppLayout() {
+  return (
+    <div className="min-h-screen bg-[#0A0C10]">
+      <Navbar />
+      <main className="pt-20">
+        <Outlet />
+      </main>
+    </div>
+  );
+}
+
+// ============================================
 // MAIN APP
 // ============================================
 
 export default function App() {
   return (
     <BrowserRouter>
-      <div className="min-h-screen bg-[#0A0C10]">
-        <Navbar />
-        <main className="pt-20">
-          <Routes>
-            {/* Public routes */}
-            <Route path="/login" element={<Login />} />
-            
-            {/* Protected routes — must be logged in */}
-            <Route path="/" element={
-              <ProtectedRoute>
-                <Dashboard />
-              </ProtectedRoute>
-            } />
-            <Route path="/documents/:id" element={
-              <ProtectedRoute>
-                <DocumentView />
-              </ProtectedRoute>
-            } />
-            
-            {/* Catch-all redirect */}
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </main>
-      </div>
+      <Routes>
+        {/* Public routes */}
+        <Route path="/" element={<Landing />} />
+        
+        {/* Auth routes */}
+        <Route path="/login" element={
+          <div className="min-h-screen bg-[#0A0C10]">
+            <Navbar />
+            <main className="pt-20"><Login /></main>
+          </div>
+        } />
+        
+        {/* Protected routes — must be logged in */}
+        <Route element={<AppLayout />}>
+          <Route path="/dashboard" element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          } />
+          <Route path="/documents/:id" element={
+            <ProtectedRoute>
+              <DocumentView />
+            </ProtectedRoute>
+          } />
+        </Route>
+        
+        {/* Catch-all redirect */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
     </BrowserRouter>
   );
 }
