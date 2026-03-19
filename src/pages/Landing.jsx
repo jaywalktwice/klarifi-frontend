@@ -3,10 +3,44 @@ import { Link, useNavigate } from 'react-router-dom';
 import NeuralBackground from '../components/NeuralBackground';
 import './Landing.css';
 
+const TYPING_WORDS = ['finds them.', 'reads them.', 'extracts them.', 'understands them.', 'clarifies them.'];
+
 export default function Landing() {
   const [navScrolled, setNavScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [currentWordIndex, setCurrentWordIndex] = useState(0);
+  const [currentText, setCurrentText] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [typingSpeed, setTypingSpeed] = useState(100);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    // Typing effect logic
+    let typeTimer;
+    const currentWord = TYPING_WORDS[currentWordIndex];
+    
+    if (isDeleting) {
+      typeTimer = setTimeout(() => {
+        setCurrentText(currentWord.substring(0, currentText.length - 1));
+        setTypingSpeed(40);
+      }, typingSpeed);
+    } else {
+      typeTimer = setTimeout(() => {
+        setCurrentText(currentWord.substring(0, currentText.length + 1));
+        setTypingSpeed(80);
+      }, typingSpeed);
+    }
+
+    if (!isDeleting && currentText === currentWord) {
+      typeTimer = setTimeout(() => setIsDeleting(true), 2500);
+    } else if (isDeleting && currentText === '') {
+      setIsDeleting(false);
+      setCurrentWordIndex((prev) => (prev + 1) % TYPING_WORDS.length);
+      setTypingSpeed(500);
+    }
+
+    return () => clearTimeout(typeTimer);
+  }, [currentText, isDeleting, currentWordIndex, typingSpeed]);
 
   useEffect(() => {
     // Scroll observer for reveal animations
@@ -75,7 +109,11 @@ export default function Landing() {
         <div className="hero-gr"></div>
         <div className="hero-c flex flex-col items-center mx-auto text-center w-full">
           <div className="hb"><span className="dot"></span> 4x hackathon winner & finalist — now production-ready</div>
-          <h1 className="text-center w-full *:text-center">Your documents hold answers.<br />Klarifi <em>finds them.</em></h1>
+          <h1 className="text-center w-full *:text-center">
+            Your documents hold answers.<br />
+            Klarifi <em>{currentText}</em>
+            <span className="inline-block w-[3px] h-[0.9em] align-middle bg-[var(--accent-l)] ml-1" style={{ animation: 'pu 1s infinite' }}></span>
+          </h1>
           <p className="hero-sub text-center w-full">AI-powered document intelligence that reads customs forms, invoices, contracts, and government paperwork — and turns them into structured, exportable data your systems can actually use.</p>
           <div className="hero-btns w-full flex justify-center">
             <Link to="/login" className="bp">Try Demo <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M3 8h10m0 0L9 4m4 4L9 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg></Link>
