@@ -108,7 +108,7 @@ export default function Landing() {
         <div className="nav-in">
           <a href="#" className="logo">
             <div className="logo-i">K</div>
-            <div className="logo-t">Klari<span>fi</span></div>
+            <div className="logo-t">Kleri<span>fi</span></div>
           </a>
           <button className="mb" onClick={() => setMenuOpen(!menuOpen)}>&#9776;</button>
           <ul className={`nl ${menuOpen ? 'open' : ''}`}>
@@ -125,12 +125,11 @@ export default function Landing() {
         <div className="hero-gr"></div>
         <div className="hero-c flex flex-col items-center mx-auto text-center w-full">
           <div className="hb"><span className="dot"></span> 4x hackathon winner & finalist — now production-ready</div>
-          <h1 className="text-center w-full *:text-center">
-            <span>Your documents hold answers.</span><br />
-            <span className="inline-flex items-center text-left" style={{ width: '420px', display: 'inline-flex' }}>
-              <span>Klerifi&nbsp;</span>
-              <em className="whitespace-nowrap" style={{ color: 'var(--accent-l)', fontStyle: 'italic' }}>{currentText}</em>
-              <span className="inline-block w-[3px] h-[0.9em] align-middle bg-[var(--accent-l)] ml-1" style={{ animation: 'pu 1s infinite' }}></span>
+          <h1 className="rv">
+            Your documents hold <em>answers.</em><br />
+            <span className="inline-flex items-center">
+              Klerifi {currentText}
+              <span className="inline-block w-[4px] h-[0.8em] align-middle bg-[var(--accent)] ml-3" style={{ animation: 'pu 1s infinite' }}></span>
             </span>
           </h1>
           <p className="hero-sub text-center w-full">AI-powered document intelligence that reads customs forms, invoices, contracts, and government paperwork — and turns them into structured, exportable data your systems can actually use.</p>
@@ -139,9 +138,9 @@ export default function Landing() {
             <a href="#how" className="bs">See how it works</a>
           </div>
           <div className="hs">
-            <div className="hs-i"><div className="n">3-8s</div><div className="l">Per document</div></div>
-            <div className="hs-i"><div className="n">95%+</div><div className="l">Accuracy</div></div>
-            <div className="hs-i"><div className="n">Any</div><div className="l">Document type</div></div>
+            <div className="hs-i rv"><div className="n">3-8s</div><div className="l">Per document</div></div>
+            <div className="hs-i rv"><div className="n">95%+</div><div className="l">Accuracy</div></div>
+            <div className="hs-i rv"><div className="n">Any</div><div className="l">Document type</div></div>
           </div>
         </div>
       </section>
