@@ -109,13 +109,13 @@ export default function NeuralBackground() {
         
         // Elegant glow for highly active particles (replaces visible lines)
         if (this.currentAlpha > 0.3) {
-           ctx.shadowColor = `rgba(92, 180, 247, ${this.currentAlpha})`;
+           ctx.shadowColor = `rgba(191, 245, 73, ${this.currentAlpha})`;
            ctx.shadowBlur = 12 * this.currentAlpha;
         } else {
            ctx.shadowBlur = 0;
         }
         
-        ctx.fillStyle = `rgba(92, 180, 247, ${this.currentAlpha})`;
+        ctx.fillStyle = `rgba(191, 245, 73, ${this.currentAlpha})`;
         ctx.fill();
       }
     }
